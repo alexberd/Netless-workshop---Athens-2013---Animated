@@ -1,0 +1,393 @@
+String [] lists= new String[1000];
+PImage [] map= new PImage[1000];
+point[] node = new point[100];
+PImage logo;
+int maps;
+PImage legent;
+int speed=1;
+String current_node;
+int nodes=0;
+
+//making time
+int hour;
+int min;
+int sec;
+int time;
+
+//coordinates
+int Xhigher;
+int Yhigher;
+int Xlower=1000000000;
+int Ylower=1000000000;
+
+void setup()
+{
+  if (maps==4) maps=0;
+  maps++;
+  logo = loadImage("netlesslogo.jpg");
+  if (maps==1)map[maps]=loadImage("map1.jpg");
+  if (maps==2)map[maps]=loadImage("map2.jpg");
+  if (maps==3)map[maps]=loadImage("map3.jpg");
+  if (maps==4)map[maps]=loadImage("map4.jpg");
+  
+  legent=loadImage("legent.jpg");
+  frameRate(20);
+  //fill(204, 102, 0,80);
+  
+  //background (0);
+  size (1200,800);
+
+  lists = loadStrings("Try2.csv");
+  for (int i=1;i<lists.length;i++)
+  {
+    String [] loads = split (lists[i],";");
+    if (int(loads[1])<40000) loads[1]=loads[1] + "0";
+    if (int(loads[1])<400000) loads[1]=loads[1] + "0";
+    if (int(loads[1])<4000000) loads[1]=loads[1] + "0";
+    if (int(loads[2])<24000) loads[2]=loads[2] + "0";
+    if (int(loads[2])<240000) loads[2]=loads[2] + "0";
+    if (int(loads[2])<2400000) loads[2]=loads[2] + "0";
+    if (Yhigher<int(loads[1])) Yhigher=int(loads[1]);
+    if (Ylower>int(loads[1])) 
+    {
+      if(int(loads[1])!=0)
+      { 
+        Ylower=int(loads[1]);
+      }
+    }
+    if (Xhigher<int(loads[2])) Xhigher=int(loads[2]);
+    if (Xlower>int(loads[2])) 
+    {
+      if(int(loads[2])!=0)
+      { 
+        Xlower=int(loads[2]);
+      }
+    }
+    String [] times_3 = split (loads[3],":");
+    if (hour==0) {hour=int(times_3[0]);println("hour: "+hour);}
+    if (min==0) {min=int(times_3[1]);println("min: "+min);}
+    
+    int exists=0;
+    for (int ii=0;(ii<10 && exists==0);ii++)
+    {
+      if (node[ii]!=null)
+      {
+        if (loads[0].equals(node[ii].name))
+        {
+          exists=1;
+        }
+      }
+    }
+    if (exists==0)
+    {
+      node[nodes]=new point(loads[0]);
+      node[nodes].update();
+      nodes++;
+    }
+  }
+  for (int i=1;i<node.length;i++)
+  {
+    if (node[i]!=null)
+    {
+      node[i].manually_colored(i);
+      node[i].Msgnext=null;
+    }
+  }
+}
+
+void draw()
+{
+  sec=sec+speed;
+  if (sec==60) {sec=0; min++;}
+  if (min==60) {min=0; hour++;}
+  if (hour==24) {hour=0;}
+  time=(hour*60+min)*60+sec;
+  
+  if ((hour==22)&&(min==05))
+  {
+    hour=0;
+    min=0;
+    setup();
+    for (int i=0;i<node.length;i++)
+    {
+      if (node[i]!=null)
+      {
+        node[i].history=0;
+      }
+    }
+  }
+
+  image(map[maps], 0, 0);
+  image(legent,width-249,0);
+  image(logo, 0, 0);
+  fill(150);
+  textAlign(LEFT);
+  textSize(23);
+  text("  Location: Psiri, Athens                                                                                                          time: " +hour+":"+min+":"+sec, 0, 785); 
+  fill(0,0,0);
+  text("  Location: Psiri, Athens                                                                                                          time: " +hour+":"+min+":"+sec, 0, 784); 
+  textAlign(CENTER);
+
+  for (int i=0;i<100;i++)
+  {
+    if (node[i]!=null) 
+    {
+      node[i].history();
+      stroke(0);
+      stroke(node[i].color_1,node[i].color_2,node[i].color_3);
+      fill(node[i].color_1/1.5,node[i].color_2/1.5,node[i].color_3/1.5);
+      strokeWeight(1);
+      node[i].show();
+      fill(node[i].color_1/2,node[i].color_2/2,node[i].color_3/2);
+      node[i].msg();
+    }
+  } 
+}
+
+
+class point
+{
+  int Xprevious;
+  int Yprevious;
+  int Xnext;
+  int Ynext;
+  int Timeprevious;
+  int Timenext;
+  String name;
+  int color_1;
+  int color_2;
+  int color_3;
+  String Msgnext;
+  int TimeMsgnext;
+  int Msgtimer;
+  int [] Xlast= new int[500];
+  int [] Ylast= new int[500];
+  int history;
+  
+  point(String name1)
+  {
+    name = name1;
+    println("a new point has been made with name: '" + name1+"'");
+  }
+  void colored(int i)
+  {
+    colorMode(HSB, 255);
+    color_1=int((255/nodes)*i);
+    color_2=int(255);
+    color_3=int(255);
+    println(color_1+color_2+color_3);
+  }
+  void manually_colored(int i)
+  {
+    if (i==1)
+    {
+      color_1=int(255);
+      color_2=int(0);
+      color_3=int(0);
+    }
+    if (i==2)
+    {
+      color_1=int(0);
+      color_2=int(255);
+      color_3=int(0);
+    }
+    if (i==3)
+    {
+      color_1=int(0);
+      color_2=int(0);
+      color_3=int(255);
+    }
+    if (i==4)
+    {
+      color_1=int(255);
+      color_2=int(255);
+      color_3=int(0);
+    }
+    if (i==6)
+    {
+      color_1=int(0);
+      color_2=int(255);
+      color_3=int(255);
+    }
+    if (i==7)
+    {
+      color_1=int(255);
+      color_2=int(0);
+      color_3=int(255);
+    }    
+  }
+  void history()
+  {
+    if (sec==0) 
+    {
+      history++;
+      Xlast[history]=Xprevious;
+      Ylast[history]=Yprevious;
+    }
+    for (int i=0;i<history;i++)
+    {
+      if((Xlast[i]!=0)&&(Ylast[i]!=0))
+      {
+        stroke(color_1,color_2,color_3,150);
+        strokeWeight(3); 
+        line((Xlast[i]-Xlower)*(float(width)/(Xhigher-Xlower))  ,  height-((Ylast[i]-Ylower)*((height)/float(Yhigher-Ylower))),(Xlast[i+1]-Xlower)*(float(width)/(Xhigher-Xlower))  ,  height-((Ylast[i+1]-Ylower)*((height)/float(Yhigher-Ylower))));
+      }
+    } 
+  }
+  void msg()
+  {
+    println("------------"+Msgnext);
+    if (Msgnext!="-1")
+    {
+      if (Msgnext!=null)
+      {
+        if (time>TimeMsgnext)
+        {
+          textSize(32-Msgtimer/1.5);
+          text(Msgnext,(Xprevious+(Xnext-Xprevious)*(((hour*60+min)*60+sec)-Timeprevious)/float(Timenext-Timeprevious)-Xlower)*(float(width)/(Xhigher-Xlower))  ,  height+30-Msgtimer/1.5-(((Yprevious+(Ynext-Yprevious)*(((hour*60+min)*60+sec)-Timeprevious)/float(Timenext-Timeprevious))-Ylower)*((height)/float(Yhigher-Ylower))));
+          
+          noFill();
+          stroke(color_1,color_2,color_3);
+          ellipse((Xprevious+(Xnext-Xprevious)*(((hour*60+min)*60+sec)-Timeprevious)/float(Timenext-Timeprevious)-Xlower)*(float(width)/(Xhigher-Xlower))  ,  height-(((Yprevious+(Ynext-Yprevious)*(((hour*60+min)*60+sec)-Timeprevious)/float(Timenext-Timeprevious))-Ylower)*((height)/float(Yhigher-Ylower))),100-Msgtimer*2,100-Msgtimer*2);
+          Msgtimer++;
+          if (Msgtimer>20) 
+          {
+            Msgnext=null;
+            Msgtimer=0;
+          }
+        }
+      }
+      else
+      {
+        updateMsg();
+      }
+    }
+  }
+  void updateMsg()
+  {
+    String [] loads_1=new String[5];
+    String [] loads_2 = new String[5];
+    
+    int OK=0;
+    for (int i=1;i<(lists.length)&&(OK==0);i++)
+    {
+      String[] loads = split (lists[i],";");
+      if (loads[0].equals(name))
+      {
+        if  ((loads[4]).equals(""))
+        {
+        }
+        else
+        {
+          String [] times_3 = split (loads[3],":");
+          if (((hour*60+min)*60+sec)<((int(times_3[0])*60+int(times_3[1]))*60+int(times_3[2])))
+          {
+            OK=1;
+            TimeMsgnext=(int(times_3[0])*60+int(times_3[1]))*60+int(times_3[2]);println("TimeMsgnext: " + TimeMsgnext);
+            Msgnext=loads[4];
+          }
+        }
+      }
+    }
+    if(OK==0)
+    {
+      Msgnext="-1";
+    }
+  }
+  void show()
+  {
+    if ((Timeprevious<(hour*60+min)*60+sec)&& ((hour*60+min)*60+sec)<Timenext)
+    {
+      ellipse((Xprevious+(Xnext-Xprevious)*(((hour*60+min)*60+sec)-Timeprevious)/float(Timenext-Timeprevious)-Xlower)*(float(width)/(Xhigher-Xlower))  ,  height-(((Yprevious+(Ynext-Yprevious)*(((hour*60+min)*60+sec)-Timeprevious)/float(Timenext-Timeprevious))-Ylower)*((height)/float(Yhigher-Ylower))), 20, 20);
+    }
+    else
+    {
+      update();
+      if((Timenext-Timeprevious!=0)&&((hour*60+min)*60+sec)<Timenext)
+      {
+        ellipse((Xprevious+(Xnext-Xprevious)*(((hour*60+min)*60+sec)-Timeprevious)/float(Timenext-Timeprevious)-Xlower)*(float(width)/(Xhigher-Xlower))  ,  height-(((Yprevious+(Ynext-Yprevious)*(((hour*60+min)*60+sec)-Timeprevious)/float(Timenext-Timeprevious))-Ylower)*((height)/float(Yhigher-Ylower))), 20, 20);
+      }
+    }
+  }
+  void update()
+  {
+    String [] loads_1=new String[5];
+    String [] times_1=null;
+    String [] times_2=null;
+    String [] times_3=null;
+    
+    String [] loads_2 = new String[5];
+    String [] times_11=null;
+    String [] times_22=null;
+    String [] times_33=new String[3];
+    
+    int OK=0;
+    for (int i=1;i<(lists.length)&&(OK==0);i++)
+    {
+      if (loads_1[0]==null)
+      {
+        String[] loads = split (lists[i],";");
+        if ((loads[0].equals(name))&&(int(loads[1])!=0))
+        {
+          loads_1[0] = loads[0];
+          loads_1[1] = loads[1];
+          loads_1[2] = loads[2];
+          loads_1[3] = loads[3];
+          
+          times_3 = split (loads[3],":");
+        
+          if (((hour*60+min)*60+sec)<((int(times_3[0])*60+int(times_3[1]))*60+int(times_3[2])))
+          {
+            OK=1;
+          }
+        }
+      }
+      else
+      {
+        String [] loads = split (lists[i],";");
+        if ((loads[0].equals(name))&&(int(loads[1])!=0))
+        {
+          loads_2[0] = loads_1[0];
+          loads_2[1] = loads_1[1];
+          loads_2[2] = loads_1[2];
+          loads_2[3] = loads_1[3];
+          loads_2[4] = loads_1[4];            
+        
+          loads_1[0] = loads[0];
+          loads_1[1] = loads[1];
+          loads_1[2] = loads[2];
+          loads_1[3] = loads[3];
+
+          times_33[0] = times_3[0];
+          times_33[1] = times_3[1];
+          times_33[2] = times_3[2];
+
+          times_3 = split (loads[3],":");
+        
+          if (((int(times_33[0])*60+int(times_33[1]))*60+int(times_33[2])<=(hour*60+min)*60+sec)  &&  ((hour*60+min)*60+sec)<(int(times_3[0])*60+int(times_3[1]))*60+int(times_3[2]))
+          {
+            if (int(loads[1])<400000) loads_1[1]=loads_1[1] + "0";//println(loads[1]);
+            if (int(loads[1])<4000000) loads_1[1]=loads_1[1] + "0";//println(loads[1]);
+            if (int(loads[2])<240000) loads_1[2]=loads_1[2] + "0";//println(loads[2]);
+            if (int(loads[2])<2400000) loads_1[2]=loads_1[2] + "0";//println(loads[2]);   
+                    
+            if (int(loads_2[1])<400000) loads_2[1]=loads_2[1] + "0";//println(loads[1]);
+            if (int(loads_2[1])<4000000) loads_2[1]=loads_2[1] + "0";//println(loads[1]);
+            if (int(loads_2[2])<240000) loads_2[2]=loads_2[2] + "0";//println(loads[2]);
+            if (int(loads_2[2])<2400000) loads_2[2]=loads_2[2] + "0";//println(loads[2]);                
+                    
+            Xprevious=int(loads_2[2]);//println("Xprevious: "+Xprevious);
+            Yprevious=int(loads_2[1]);//println("Yprevious: "+Yprevious);
+            
+            Xnext=int(loads_1[2]);//println("Xnext: "+Xnext);
+            Ynext=int(loads_1[1]);//println("Ynext: "+Ynext);
+    
+            Timeprevious=(int(times_33[0])*60+int(times_33[1]))*60+int(times_33[2]);
+            Timenext=(int(times_3[0])*60+int(times_3[1]))*60+int(times_3[2]);
+            OK=1;
+          }
+        }
+      }
+    }
+  }
+}
