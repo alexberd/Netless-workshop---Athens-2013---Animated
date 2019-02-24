@@ -37,7 +37,7 @@ void setup()
   //background (0);
   size (1200,800);
 
-  lists = loadStrings("Try2.csv");
+  lists = loadStrings("GPS-Data.csv");
   for (int i=1;i<lists.length;i++)
   {
     String [] loads = split (lists[i],";");
