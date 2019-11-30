@@ -7,7 +7,7 @@ The experiment shows how information can spread only using a system that allows 
 Project was created in the context of the "Netless" Workshop which took place at Frown with Danja Vasiliev as part of the Hybrid Cities Conference 2013 events.
 
 More info:
-https://www.flickr.com/photos/datenspiel/sets/72157634042359069/with/9025056153/
+https://www.flickr.com/photos/datenspiel/sets/72157634042359069/
 https://ram.k0a1a.net/netless3-workshop
 
 Video Produced:
